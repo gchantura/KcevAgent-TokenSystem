@@ -4,6 +4,13 @@ This repository uses a framework-neutral AI operating layer. `.ai/manifest.yaml`
 
 Compatibility requires an agent host that loads repository instructions or manually attaches them. Raw models do not discover this layer automatically. The generated map is a token-efficient navigation index, not complete semantic or architectural understanding.
 
+## Product reconstruction source
+
+- Read `What Needs To be Done/PROJECT_BLUEPRINT.md` before implementing product functionality. It is the self-contained source of truth for the Kceva Agent OS product, architecture, data model, workflows, security boundaries, reconstruction order, and acceptance criteria.
+- Use `What Needs To be Done/AI_REBUILD_PROMPT.md` as the execution contract for building the product from zero.
+- Do not assume access to `C:\Users\GCJR\Documents\Code WorkSpace\Agent-System` or any other source repository. All required requirements must be resolved from files inside this repository.
+- When generated project facts conflict with the blueprint, current verified code and tests are authoritative for implemented state; the blueprint remains authoritative for unfinished target behavior.
+
 ## Boundaries
 
 - Product code must not depend on the AI operating layer.
