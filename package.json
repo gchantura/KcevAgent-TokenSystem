@@ -56,5 +56,10 @@
 	},
 	"keywords": [
 		"svelte"
-	]
+	],
+	"dependencies": {
+		"@supabase/ssr": "^0.12.0",
+		"@supabase/supabase-js": "^2.110.0",
+		"lucide-svelte": "^1.0.1"
+	}
 }

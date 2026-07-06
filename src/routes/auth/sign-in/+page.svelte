@@ -1,0 +1,72 @@
+<script lang="ts">
+	import { enhance } from '$app/forms';
+	import type { ActionData } from './$types';
+
+	const { form }: { form: ActionData } = $props();
+
+	let loading = $state(false);
+</script>
+
+<h1 class="text-2xl font-bold text-[#1a1a1a] mb-1">Welcome back</h1>
+<p class="text-sm text-[#4a5568] mb-6">Sign in to your Atomic DSB workspace</p>
+
+{#if form?.error}
+	<div class="mb-4 p-3 rounded-lg bg-[#f9d3d8] border border-[#f9a8b4] text-[#600006] text-sm">
+		{form.error}
+	</div>
+{/if}
+
+<form
+	method="POST"
+	action="?/signIn"
+	use:enhance={() => {
+		loading = true;
+		return async ({ update }) => {
+			await update();
+			loading = false;
+		};
+	}}
+	class="space-y-4"
+>
+	<div>
+		<label for="email" class="block text-xs font-bold text-[#1a1a1a] mb-1">Email</label>
+		<input
+			id="email"
+			name="email"
+			type="email"
+			required
+			autocomplete="email"
+			placeholder="you@example.com"
+			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
+		/>
+	</div>
+
+	<div>
+		<div class="flex items-center justify-between mb-1">
+			<label for="password" class="block text-xs font-bold text-[#1a1a1a]">Password</label>
+			<a href="/auth/reset-password" class="text-xs text-[#004aff] hover:underline">Forgot password?</a>
+		</div>
+		<input
+			id="password"
+			name="password"
+			type="password"
+			required
+			autocomplete="current-password"
+			placeholder="••••••••"
+			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
+		/>
+	</div>
+
+	<button
+		type="submit"
+		disabled={loading}
+		class="w-full py-2.5 px-4 bg-[#004aff] hover:bg-[#0040dd] disabled:bg-[#9ab3ff] text-white text-sm font-bold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:ring-offset-2"
+	>
+		{loading ? 'Signing in...' : 'Sign in'}
+	</button>
+</form>
+
+<p class="mt-6 text-center text-xs text-[#4a5568]">
+	Don't have an account?
+	<a href="/auth/sign-up" class="text-[#004aff] font-bold hover:underline">Sign up</a>
+</p>
