@@ -6,82 +6,71 @@
 	let loading = $state(false);
 </script>
 
-<h1 class="text-2xl font-bold text-[#1a1a1a] mb-1">Create account</h1>
-<p class="text-sm text-[#4a5568] mb-6">Start building your design system</p>
-
-{#if form?.error}
-	<div class="mb-4 p-3 rounded-lg bg-[#f9d3d8] border border-[#f9a8b4] text-[#600006] text-sm">
-		{form.error}
-	</div>
-{/if}
-
-{#if form?.success}
-	<div class="mb-4 p-3 rounded-lg bg-[#d3eedf] border border-[#86efac] text-[#0e6b2c] text-sm">
-		Account created! Check your email to confirm, or sign in now.
-	</div>
-{/if}
-
-<form
-	method="POST"
-	action="?/signUp"
-	use:enhance={() => {
-		loading = true;
-		return async ({ update }) => {
-			await update();
-			loading = false;
-		};
-	}}
-	class="space-y-4"
->
-	<div>
-		<label for="display_name" class="block text-xs font-bold text-[#1a1a1a] mb-1">Full name</label>
-		<input
-			id="display_name"
-			name="display_name"
-			type="text"
-			required
-			placeholder="Mara Hoffmann"
-			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
-		/>
+<div class="auth-card">
+	<div class="auth-logo">
+		<div class="auth-logo-mark">
+			<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+				<rect x="2" y="2" width="5" height="5" rx="1" fill="white"/>
+				<rect x="9" y="2" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+				<rect x="2" y="9" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+				<rect x="9" y="9" width="5" height="5" rx="1" fill="white"/>
+			</svg>
+		</div>
+		<span style="font-size:14px;font-weight:700;color:var(--text-primary);">Atomic DSB</span>
 	</div>
 
-	<div>
-		<label for="email" class="block text-xs font-bold text-[#1a1a1a] mb-1">Email</label>
-		<input
-			id="email"
-			name="email"
-			type="email"
-			required
-			autocomplete="email"
-			placeholder="you@example.com"
-			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
-		/>
-	</div>
+	<h1 class="auth-title">Create account</h1>
+	<p class="auth-subtitle">Start building your design system today</p>
 
-	<div>
-		<label for="password" class="block text-xs font-bold text-[#1a1a1a] mb-1">Password</label>
-		<input
-			id="password"
-			name="password"
-			type="password"
-			required
-			minlength={8}
-			autocomplete="new-password"
-			placeholder="At least 8 characters"
-			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
-		/>
-	</div>
+	{#if form?.error}
+		<div class="alert alert-error" style="margin-bottom:16px;">{form.error}</div>
+	{/if}
+	{#if form?.success}
+		<div class="alert alert-success" style="margin-bottom:16px;">Account created! You can now sign in.</div>
+	{/if}
 
-	<button
-		type="submit"
-		disabled={loading}
-		class="w-full py-2.5 px-4 bg-[#004aff] hover:bg-[#0040dd] disabled:bg-[#9ab3ff] text-white text-sm font-bold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:ring-offset-2"
+	<form
+		method="POST"
+		action="?/signUp"
+		use:enhance={() => {
+			loading = true;
+			return async ({ update }) => { await update(); loading = false; };
+		}}
+		style="display:flex;flex-direction:column;gap:14px;"
 	>
-		{loading ? 'Creating account...' : 'Create account'}
-	</button>
-</form>
+		<div class="form-group">
+			<label class="form-label" for="display_name">Full name</label>
+			<input
+				id="display_name" name="display_name" type="text" required
+				placeholder="Mara Hoffmann"
+				class="form-input"
+			/>
+		</div>
 
-<p class="mt-6 text-center text-xs text-[#4a5568]">
-	Already have an account?
-	<a href="/auth/sign-in" class="text-[#004aff] font-bold hover:underline">Sign in</a>
-</p>
+		<div class="form-group">
+			<label class="form-label" for="email">Email address</label>
+			<input
+				id="email" name="email" type="email" required
+				autocomplete="email" placeholder="you@company.com"
+				class="form-input"
+			/>
+		</div>
+
+		<div class="form-group">
+			<label class="form-label" for="password">Password <span class="form-label-opt">(min 8 chars)</span></label>
+			<input
+				id="password" name="password" type="password" required
+				minlength={8} autocomplete="new-password" placeholder="Create a strong password"
+				class="form-input"
+			/>
+		</div>
+
+		<button type="submit" class="btn btn-primary btn-lg" disabled={loading} style="width:100%;margin-top:4px;">
+			{loading ? 'Creating account…' : 'Create account'}
+		</button>
+	</form>
+
+	<p class="auth-footer-link">
+		Already have an account? <a href="/auth/sign-in">Sign in</a>
+	</p>
+</div>

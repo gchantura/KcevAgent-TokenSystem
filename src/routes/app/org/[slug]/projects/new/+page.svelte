@@ -6,73 +6,49 @@
 	let loading = $state(false);
 </script>
 
-<div class="p-6 lg:p-8 max-w-xl mx-auto">
-	<nav class="flex items-center gap-1 text-xs text-[#9aa5b4] mb-4">
-		<a href="/app/org/{data.org?.slug}" class="hover:text-[#004aff]">{data.org?.name}</a>
-		<span>/</span>
-		<span class="text-[#1a1a1a]">New project</span>
-	</nav>
+<!-- Header -->
+<div class="page-header">
+	<div class="page-header-breadcrumb">
+		<a href="/app/org/{data.org?.slug}">{data.org?.name}</a>
+		<span class="sep">/</span>
+		<span style="color:var(--text-primary);font-weight:600;">New project</span>
+	</div>
+</div>
 
-	<h1 class="text-2xl font-bold text-[#1a1a1a] mb-6">Create project</h1>
+<div class="page-body">
+	<div class="page-body-inner" style="max-width:480px;">
+		<h1 style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:20px;">Create project</h1>
 
-	{#if form?.error}
-		<div class="mb-4 p-3 rounded-lg bg-[#f9d3d8] border border-[#f9a8b4] text-[#600006] text-sm">
-			{form.error}
+		{#if form?.error}
+			<div class="alert alert-error" style="margin-bottom:16px;">{form.error}</div>
+		{/if}
+
+		<div class="card">
+			<div class="card-body">
+				<form
+					method="POST"
+					use:enhance={() => {
+						loading = true;
+						return async ({ update }) => { await update(); loading = false; };
+					}}
+					style="display:flex;flex-direction:column;gap:14px;"
+				>
+					<div class="form-group">
+						<label class="form-label" for="name">Project name</label>
+						<input id="name" name="name" type="text" required placeholder="Web Application" class="form-input" />
+					</div>
+					<div class="form-group">
+						<label class="form-label" for="description">Description <span class="form-label-opt">(optional)</span></label>
+						<textarea id="description" name="description" placeholder="What does this project cover?" class="form-textarea"></textarea>
+					</div>
+					<div style="display:flex;gap:8px;">
+						<a href="/app/org/{data.org?.slug}" class="btn btn-secondary" style="flex:1;justify-content:center;">Cancel</a>
+						<button type="submit" class="btn btn-primary" disabled={loading} style="flex:1;">
+							{loading ? 'Creating…' : 'Create project'}
+						</button>
+					</div>
+				</form>
+			</div>
 		</div>
-	{/if}
-
-	<div class="bg-white rounded-xl border border-[#d9e4ff] p-6">
-		<form
-			method="POST"
-			use:enhance={() => {
-				loading = true;
-				return async ({ update }) => {
-					await update();
-					loading = false;
-				};
-			}}
-			class="space-y-4"
-		>
-			<div>
-				<label for="name" class="block text-xs font-bold text-[#1a1a1a] mb-1">Project name</label>
-				<input
-					id="name"
-					name="name"
-					type="text"
-					required
-					placeholder="Web App"
-					class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
-				/>
-			</div>
-
-			<div>
-				<label for="description" class="block text-xs font-bold text-[#1a1a1a] mb-1">
-					Description <span class="text-[#9aa5b4] font-normal">(optional)</span>
-				</label>
-				<textarea
-					id="description"
-					name="description"
-					rows={3}
-					placeholder="What does this project cover?"
-					class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all resize-none"
-				></textarea>
-			</div>
-
-			<div class="flex gap-3 pt-2">
-				<a
-					href="/app/org/{data.org?.slug}"
-					class="flex-1 py-2 px-4 border border-[#d9e4ff] rounded-lg text-sm font-bold text-[#4a5568] hover:bg-[#f5f7fa] transition-colors text-center"
-				>
-					Cancel
-				</a>
-				<button
-					type="submit"
-					disabled={loading}
-					class="flex-1 py-2 px-4 bg-[#004aff] text-white text-sm font-bold rounded-lg hover:bg-[#0040dd] disabled:bg-[#9ab3ff] transition-colors"
-				>
-					{loading ? 'Creating...' : 'Create project'}
-				</button>
-			</div>
-		</form>
 	</div>
 </div>

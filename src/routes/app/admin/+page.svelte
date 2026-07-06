@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { enhance } from '$app/forms';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 
 	const { data }: { data: PageData } = $props();
@@ -10,13 +9,12 @@
 
 	let activeTab = $state<'users' | 'orgs' | 'audit'>('users');
 
-	function formatDate(d: string) {
+	function fmt(d: string) {
 		return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 
-	function formatRelative(dateStr: string) {
-		const diff = Date.now() - new Date(dateStr).getTime();
-		const mins = Math.floor(diff / 60000);
+	function relative(d: string) {
+		const mins = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
 		if (mins < 1) return 'just now';
 		if (mins < 60) return `${mins}m ago`;
 		const hrs = Math.floor(mins / 60);
@@ -24,184 +22,172 @@
 		return `${Math.floor(hrs / 24)}d ago`;
 	}
 
-	function getInitials(name: string | null) {
+	function initials(name: string | null) {
 		if (!name) return '?';
 		return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 	}
 </script>
 
-<div class="p-6 lg:p-8 max-w-7xl mx-auto">
-	<!-- Header -->
-	<div class="mb-6">
-		<div class="flex items-center gap-2 text-xs text-[#9aa5b4] mb-1">
-			<span>Admin</span>
-		</div>
-		<h1 class="text-2xl font-bold text-[#1a1a1a]">Platform Admin</h1>
-		<p class="text-sm text-[#4a5568] mt-1">Manage users, organizations, and platform settings</p>
+<!-- Header -->
+<div class="page-header">
+	<div class="page-header-breadcrumb">
+		<span style="color:var(--text-primary);font-weight:600;">Platform Admin</span>
 	</div>
+</div>
 
-	<!-- Stats -->
-	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-		<div class="bg-white rounded-xl border border-[#d9e4ff] p-4">
-			<p class="text-xs font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Total users</p>
-			<p class="text-2xl font-bold text-[#1a1a1a]">{profiles.length}</p>
+<!-- Stat strip -->
+<div style="background:var(--bg-surface);border-bottom:1px solid var(--border);padding:12px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+	{#each [
+		['Total users', profiles.length],
+		['Organizations', organizations.length],
+		['Active users', profiles.filter(p => p.status === 'active').length],
+		['Platform admins', profiles.filter(p => p.is_platform_admin).length]
+	] as [label, value]}
+		<div>
+			<p style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">{label}</p>
+			<p style="font-size:20px;font-weight:700;color:var(--text-primary);margin-top:2px;">{value}</p>
 		</div>
-		<div class="bg-white rounded-xl border border-[#d9e4ff] p-4">
-			<p class="text-xs font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Organizations</p>
-			<p class="text-2xl font-bold text-[#1a1a1a]">{organizations.length}</p>
-		</div>
-		<div class="bg-white rounded-xl border border-[#d9e4ff] p-4">
-			<p class="text-xs font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Active users</p>
-			<p class="text-2xl font-bold text-[#1a1a1a]">{profiles.filter(p => p.status === 'active').length}</p>
-		</div>
-		<div class="bg-white rounded-xl border border-[#d9e4ff] p-4">
-			<p class="text-xs font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Platform admins</p>
-			<p class="text-2xl font-bold text-[#1a1a1a]">{profiles.filter(p => p.is_platform_admin).length}</p>
-		</div>
-	</div>
+	{/each}
+</div>
 
-	<!-- Tabs -->
-	<div class="flex gap-0 border-b border-[#d9e4ff] mb-6">
-		{#each [['users', 'Users'], ['orgs', 'Organizations'], ['audit', 'Audit Log']] as [id, label]}
-			<button
-				onclick={() => activeTab = id as typeof activeTab}
-				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
-					{activeTab === id
-						? 'border-[#004aff] text-[#004aff]'
-						: 'border-transparent text-[#4a5568] hover:text-[#1a1a1a]'}"
-			>
-				{label}
-			</button>
-		{/each}
-	</div>
+<!-- Tabs -->
+<div class="tabs">
+	<button class="tab {activeTab === 'users' ? 'active' : ''}" onclick={() => activeTab = 'users'}>
+		Users
+		<span class="tab-count">{profiles.length}</span>
+	</button>
+	<button class="tab {activeTab === 'orgs' ? 'active' : ''}" onclick={() => activeTab = 'orgs'}>
+		Organizations
+		<span class="tab-count">{organizations.length}</span>
+	</button>
+	<button class="tab {activeTab === 'audit' ? 'active' : ''}" onclick={() => activeTab = 'audit'}>
+		Audit log
+		<span class="tab-count">{auditLogs.length}</span>
+	</button>
+</div>
 
-	<!-- Users tab -->
-	{#if activeTab === 'users'}
-		<div class="bg-white rounded-xl border border-[#d9e4ff] overflow-hidden">
-			<table class="w-full text-sm">
-				<thead>
-					<tr class="border-b border-[#d9e4ff] bg-[#f8fafd]">
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider">User</th>
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider hidden sm:table-cell">Status</th>
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider hidden md:table-cell">Admin</th>
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider hidden lg:table-cell">Joined</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-[#f0f4fd]">
-					{#each profiles as profile}
-						<tr class="hover:bg-[#f8fafd] transition-colors">
-							<td class="px-4 py-3">
-								<div class="flex items-center gap-3">
-									<div class="w-8 h-8 rounded-full bg-[#eef2ff] flex items-center justify-center text-xs font-bold text-[#004aff] flex-shrink-0">
-										{getInitials(profile.display_name)}
-									</div>
-									<div>
-										<p class="text-xs font-bold text-[#1a1a1a]">{profile.display_name ?? 'Unknown'}</p>
-										<p class="text-[10px] text-[#9aa5b4] font-mono">{profile.id.slice(0, 8)}…</p>
-									</div>
-								</div>
-							</td>
-							<td class="px-4 py-3 hidden sm:table-cell">
-								<StatusBadge status={profile.status} size="xs" />
-							</td>
-							<td class="px-4 py-3 hidden md:table-cell">
-								{#if profile.is_platform_admin}
-									<span class="text-xs font-bold text-[#004aff]">● Admin</span>
-								{:else}
-									<span class="text-xs text-[#9aa5b4]">—</span>
-								{/if}
-							</td>
-							<td class="px-4 py-3 hidden lg:table-cell">
-								<span class="text-xs text-[#9aa5b4]">{formatDate(profile.created_at)}</span>
-							</td>
-						</tr>
-					{/each}
-					{#if profiles.length === 0}
-						<tr>
-							<td colspan="4" class="px-4 py-8 text-center text-xs text-[#9aa5b4]">No users found</td>
-						</tr>
-					{/if}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+<!-- Content -->
+<div class="page-body">
+	<div class="page-body-inner">
 
-	<!-- Organizations tab -->
-	{#if activeTab === 'orgs'}
-		<div class="bg-white rounded-xl border border-[#d9e4ff] overflow-hidden">
-			<table class="w-full text-sm">
-				<thead>
-					<tr class="border-b border-[#d9e4ff] bg-[#f8fafd]">
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider">Organization</th>
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider hidden sm:table-cell">Status</th>
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider hidden md:table-cell">Members</th>
-						<th class="text-left px-4 py-3 text-xs font-bold text-[#9aa5b4] uppercase tracking-wider hidden lg:table-cell">Created</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-[#f0f4fd]">
-					{#each organizations as org}
-						<tr class="hover:bg-[#f8fafd] transition-colors">
-							<td class="px-4 py-3">
-								<div class="flex items-center gap-3">
-									<div class="w-8 h-8 rounded-lg bg-[#d9e4ff] flex items-center justify-center text-xs font-bold text-[#004aff] flex-shrink-0">
-										{org.name[0].toUpperCase()}
-									</div>
-									<div>
-										<a href="/app/org/{org.slug}" class="text-xs font-bold text-[#004aff] hover:underline">{org.name}</a>
-										<p class="text-[10px] text-[#9aa5b4]">/{org.slug}</p>
-									</div>
-								</div>
-							</td>
-							<td class="px-4 py-3 hidden sm:table-cell">
-								<StatusBadge status={org.status} size="xs" />
-							</td>
-							<td class="px-4 py-3 hidden md:table-cell">
-								<span class="text-xs text-[#4a5568]">{(org.organization_members as { count: number }[])?.[0]?.count ?? 0}</span>
-							</td>
-							<td class="px-4 py-3 hidden lg:table-cell">
-								<span class="text-xs text-[#9aa5b4]">{formatDate(org.created_at)}</span>
-							</td>
-						</tr>
-					{/each}
-					{#if organizations.length === 0}
-						<tr>
-							<td colspan="4" class="px-4 py-8 text-center text-xs text-[#9aa5b4]">No organizations found</td>
-						</tr>
-					{/if}
-				</tbody>
-			</table>
-		</div>
-	{/if}
-
-	<!-- Audit Log tab -->
-	{#if activeTab === 'audit'}
-		<div class="bg-white rounded-xl border border-[#d9e4ff] divide-y divide-[#d9e4ff]">
-			{#if auditLogs.length === 0}
-				<div class="p-8 text-center">
-					<p class="text-xs text-[#9aa5b4]">No audit events recorded yet</p>
-				</div>
-			{:else}
-				{#each auditLogs as log}
-					<div class="px-4 py-3 flex items-start gap-3 hover:bg-[#f8fafd] transition-colors">
-						<div class="w-7 h-7 rounded-full bg-[#eef2ff] flex items-center justify-center text-[10px] font-bold text-[#004aff] flex-shrink-0 mt-0.5">
-							{getInitials((log.profiles as { display_name: string | null } | null)?.display_name ?? null)}
-						</div>
-						<div class="flex-1 min-w-0">
-							<div class="flex items-start justify-between gap-2">
-								<p class="text-xs text-[#1a1a1a]">
-									<span class="font-bold">{(log.profiles as { display_name: string | null } | null)?.display_name ?? 'System'}</span>
-									{' '}<span class="text-[#004aff]">{log.action}</span>
-									{' on '}<span class="font-medium">{log.resource_type}</span>
-								</p>
-								<span class="text-[10px] text-[#9aa5b4] flex-shrink-0">{formatRelative(log.created_at)}</span>
-							</div>
-							{#if log.resource_id}
-								<p class="text-[10px] text-[#9aa5b4] font-mono mt-0.5">{log.resource_id}</p>
-							{/if}
-						</div>
+		{#if activeTab === 'users'}
+			<div class="card">
+				{#if profiles.length === 0}
+					<div class="empty-state">
+						<p class="empty-title">No users found</p>
 					</div>
-				{/each}
-			{/if}
-		</div>
-	{/if}
+				{:else}
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>User</th>
+								<th>Status</th>
+								<th>Role</th>
+								<th>Joined</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each profiles as p}
+								<tr>
+									<td>
+										<div style="display:flex;align-items:center;gap:8px;">
+											<div class="avatar avatar-lg">{initials(p.display_name)}</div>
+											<div>
+												<p style="font-size:12px;font-weight:600;color:var(--text-primary);">{p.display_name ?? '—'}</p>
+												<p class="mono" style="font-size:10px;color:var(--text-muted);">{p.id.slice(0, 12)}…</p>
+											</div>
+										</div>
+									</td>
+									<td><StatusBadge status={p.status} size="xs" /></td>
+									<td>
+										{#if p.is_platform_admin}
+											<span class="badge" style="background:var(--accent-muted);color:var(--accent);font-size:10px;">Platform admin</span>
+										{:else}
+											<span style="font-size:11px;color:var(--text-muted);">—</span>
+										{/if}
+									</td>
+									<td style="font-size:11px;color:var(--text-muted);">{fmt(p.created_at)}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{/if}
+			</div>
+		{/if}
+
+		{#if activeTab === 'orgs'}
+			<div class="card">
+				{#if organizations.length === 0}
+					<div class="empty-state">
+						<p class="empty-title">No organizations</p>
+					</div>
+				{:else}
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Organization</th>
+								<th>Status</th>
+								<th>Members</th>
+								<th>Created</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each organizations as org}
+								<tr>
+									<td>
+										<div style="display:flex;align-items:center;gap:8px;">
+											<div style="width:28px;height:28px;border-radius:var(--radius-md);background:var(--accent-muted);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+												{org.name[0].toUpperCase()}
+											</div>
+											<div>
+												<a href="/app/org/{org.slug}" style="font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;">{org.name}</a>
+												<p style="font-size:10px;color:var(--text-muted);">/{org.slug}</p>
+											</div>
+										</div>
+									</td>
+									<td><StatusBadge status={org.status} size="xs" /></td>
+									<td style="font-size:12px;color:var(--text-secondary);">{(org.organization_members as {count:number}[])?.[0]?.count ?? 0}</td>
+									<td style="font-size:11px;color:var(--text-muted);">{fmt(org.created_at)}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{/if}
+			</div>
+		{/if}
+
+		{#if activeTab === 'audit'}
+			<div class="card">
+				{#if auditLogs.length === 0}
+					<div class="empty-state">
+						<p class="empty-title">No audit events</p>
+						<p class="empty-desc">Security events will appear here as users perform actions.</p>
+					</div>
+				{:else}
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Actor</th>
+								<th>Action</th>
+								<th>Resource</th>
+								<th>When</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each auditLogs as log}
+								{@const actor = (log.profiles as {display_name:string|null}|null)}
+								<tr>
+									<td style="font-size:12px;font-weight:500;color:var(--text-primary);">{actor?.display_name ?? 'System'}</td>
+									<td style="font-size:12px;color:var(--accent);">{log.action}</td>
+									<td style="font-size:11px;color:var(--text-secondary);">{log.resource_type}</td>
+									<td style="font-size:11px;color:var(--text-muted);">{relative(log.created_at)}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{/if}
+			</div>
+		{/if}
+
+	</div>
 </div>

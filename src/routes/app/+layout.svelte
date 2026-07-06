@@ -6,7 +6,6 @@
 	import type { LayoutData } from './$types';
 
 	const { children, data }: { children: import('svelte').Snippet; data: LayoutData } = $props();
-
 	const supabase = createClient();
 
 	async function signOut() {
@@ -15,15 +14,14 @@
 	}
 </script>
 
-<div class="flex h-screen bg-[#d6dde6] overflow-hidden">
+<div class="layout-root">
 	<AppSidebar
 		profile={data.profile}
 		memberships={data.memberships}
 		currentPath={page.url.pathname}
 		{signOut}
 	/>
-
-	<main class="flex-1 overflow-auto">
+	<div class="main-content">
 		{@render children()}
-	</main>
+	</div>
 </div>

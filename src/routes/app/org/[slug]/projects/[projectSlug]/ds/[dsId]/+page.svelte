@@ -15,114 +15,119 @@
 
 	let activeTab = $state<'tokens' | 'components' | 'releases'>('tokens');
 
-	const tabs = [
+	const tabs = $derived([
 		{ id: 'tokens' as const, label: 'Tokens', count: collections.flatMap(c => c.design_tokens ?? []).length },
 		{ id: 'components' as const, label: 'Components', count: components.length },
 		{ id: 'releases' as const, label: 'Releases', count: releases.length }
-	];
+	]);
 </script>
 
-<div class="flex flex-col h-full">
-	<!-- Header -->
-	<div class="bg-white border-b border-[#d9e4ff] px-6 py-4">
-		<div class="flex items-start justify-between gap-4">
-			<div>
-				<nav class="flex items-center gap-1 text-xs text-[#9aa5b4] mb-1">
-					<a href="/app/org/{org.slug}" class="hover:text-[#004aff]">{org.name}</a>
-					<span>/</span>
-					<a href="/app/org/{org.slug}/projects/{project.slug}" class="hover:text-[#004aff]">{project.name}</a>
-					<span>/</span>
-					<span class="text-[#1a1a1a]">{ds.name}</span>
-				</nav>
-				<div class="flex items-center gap-3">
-					<h1 class="text-xl font-bold text-[#1a1a1a]">{ds.name}</h1>
-					<StatusBadge status={ds.maturity} size="sm" />
-					<span class="text-xs text-[#9aa5b4]">v{ds.version}</span>
-				</div>
-				{#if ds.description}
-					<p class="text-sm text-[#4a5568] mt-1">{ds.description}</p>
-				{/if}
-			</div>
-			<div class="flex items-center gap-2 flex-shrink-0">
-				<a
-					href="/app/org/{org.slug}/projects/{project.slug}/ds/{ds.id}/settings"
-					class="px-3 py-1.5 text-xs font-bold border border-[#d9e4ff] rounded-lg text-[#4a5568] hover:border-[#004aff] hover:text-[#004aff] transition-colors"
-				>
-					Settings
-				</a>
-			</div>
-		</div>
-
-		<!-- Tabs -->
-		<div class="flex gap-0 mt-4 -mb-4 border-b border-transparent">
-			{#each tabs as tab}
-				<button
-					onclick={() => activeTab = tab.id}
-					class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors
-						{activeTab === tab.id
-							? 'border-[#004aff] text-[#004aff]'
-							: 'border-transparent text-[#4a5568] hover:text-[#1a1a1a]'}"
-				>
-					{tab.label}
-					{#if tab.count > 0}
-						<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full
-							{activeTab === tab.id ? 'bg-[#eef2ff] text-[#004aff]' : 'bg-[#f5f7fa] text-[#9aa5b4]'}">
-							{tab.count}
-						</span>
-					{/if}
-				</button>
-			{/each}
-		</div>
+<!-- Header -->
+<div class="page-header">
+	<div class="page-header-breadcrumb">
+		<a href="/app/org/{org.slug}">{org.name}</a>
+		<span class="sep">/</span>
+		<a href="/app/org/{org.slug}/projects/{project.slug}">{project.name}</a>
+		<span class="sep">/</span>
+		<span style="color:var(--text-primary);font-weight:600;">{ds.name}</span>
 	</div>
+	<div style="display:flex;align-items:center;gap:8px;margin:0 auto 0 12px;">
+		<StatusBadge status={ds.maturity} size="xs" />
+		<span class="mono" style="font-size:11px;color:var(--text-muted);">v{ds.version}</span>
+	</div>
+	<div class="page-header-actions">
+		<button class="btn btn-secondary btn-sm">
+			<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+			</svg>
+			Settings
+		</button>
+	</div>
+</div>
 
-	<!-- Tab content -->
-	<div class="flex-1 overflow-auto">
-		{#if activeTab === 'tokens'}
-			<TokenExplorer {collections} {modes} dsId={ds.id} orgSlug={org.slug} projectSlug={project.slug} />
-		{:else if activeTab === 'components'}
-			<ComponentLibrary {components} dsId={ds.id} orgSlug={org.slug} projectSlug={project.slug} />
-		{:else if activeTab === 'releases'}
-			<div class="p-6 max-w-3xl mx-auto">
-				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-base font-bold text-[#1a1a1a]">Releases</h2>
-					<a
-						href="/app/org/{org.slug}/projects/{project.slug}/ds/{ds.id}/releases/new"
-						class="px-3 py-1.5 text-xs font-bold bg-[#004aff] text-white rounded-lg hover:bg-[#0040dd] transition-colors"
-					>
-						+ New release
-					</a>
+<!-- Tabs -->
+<div class="tabs">
+	{#each tabs as tab}
+		<button
+			class="tab {activeTab === tab.id ? 'active' : ''}"
+			onclick={() => activeTab = tab.id}
+		>
+			{tab.label}
+			{#if tab.count > 0}
+				<span class="tab-count">{tab.count}</span>
+			{/if}
+		</button>
+	{/each}
+</div>
+
+<!-- Tab content -->
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+	{#if activeTab === 'tokens'}
+		<TokenExplorer
+			{collections} {modes}
+			dsId={ds.id}
+			orgSlug={org.slug}
+			projectSlug={project.slug}
+		/>
+	{:else if activeTab === 'components'}
+		<ComponentLibrary
+			{components}
+			dsId={ds.id}
+			orgSlug={org.slug}
+			projectSlug={project.slug}
+		/>
+	{:else if activeTab === 'releases'}
+		<div class="page-body">
+			<div class="page-body-inner" style="max-width:720px;">
+				<div class="section-heading">
+					<span class="section-title">Releases</span>
+					<button class="btn btn-primary btn-sm">
+						<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+						</svg>
+						New release
+					</button>
 				</div>
 
 				{#if releases.length === 0}
-					<div class="bg-white rounded-xl border border-[#d9e4ff] p-8 text-center">
-						<p class="text-sm text-[#9aa5b4]">No releases yet</p>
+					<div class="card">
+						<div class="empty-state">
+							<div class="empty-icon">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+								</svg>
+							</div>
+							<p class="empty-title">No releases yet</p>
+							<p class="empty-desc">Create your first release to track design system versions.</p>
+						</div>
 					</div>
 				{:else}
-					<div class="space-y-3">
-						{#each releases as release}
-							<div class="bg-white rounded-xl border border-[#d9e4ff] p-4">
-								<div class="flex items-start justify-between gap-3">
-									<div>
-										<div class="flex items-center gap-2 mb-1">
-											<span class="text-sm font-bold text-[#1a1a1a]">v{release.version}</span>
-											{#if release.name}
-												<span class="text-sm text-[#4a5568]">— {release.name}</span>
-											{/if}
-											<StatusBadge status={release.status} size="xs" />
-										</div>
-										{#if release.description}
-											<p class="text-xs text-[#4a5568]">{release.description}</p>
-										{/if}
-										<p class="text-[10px] text-[#9aa5b4] mt-1">
-											{new Date(release.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-										</p>
-									</div>
-								</div>
-							</div>
-						{/each}
+					<div class="card">
+						<table class="data-table">
+							<thead>
+								<tr>
+									<th>Version</th>
+									<th>Name</th>
+									<th>Status</th>
+									<th>Released</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each releases as r}
+									<tr>
+										<td><span class="mono" style="font-weight:600;">v{r.version}</span></td>
+										<td style="color:var(--text-secondary);">{r.name ?? '—'}</td>
+										<td><StatusBadge status={r.status} size="xs" /></td>
+										<td style="color:var(--text-muted);font-size:11px;">
+											{r.published_at ? new Date(r.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Not published'}
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
 					</div>
 				{/if}
 			</div>
-		{/if}
-	</div>
+		</div>
+	{/if}
 </div>

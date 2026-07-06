@@ -3,70 +3,77 @@
 	import type { ActionData } from './$types';
 
 	const { form }: { form: ActionData } = $props();
-
 	let loading = $state(false);
 </script>
 
-<h1 class="text-2xl font-bold text-[#1a1a1a] mb-1">Welcome back</h1>
-<p class="text-sm text-[#4a5568] mb-6">Sign in to your Atomic DSB workspace</p>
-
-{#if form?.error}
-	<div class="mb-4 p-3 rounded-lg bg-[#f9d3d8] border border-[#f9a8b4] text-[#600006] text-sm">
-		{form.error}
-	</div>
-{/if}
-
-<form
-	method="POST"
-	action="?/signIn"
-	use:enhance={() => {
-		loading = true;
-		return async ({ update }) => {
-			await update();
-			loading = false;
-		};
-	}}
-	class="space-y-4"
->
-	<div>
-		<label for="email" class="block text-xs font-bold text-[#1a1a1a] mb-1">Email</label>
-		<input
-			id="email"
-			name="email"
-			type="email"
-			required
-			autocomplete="email"
-			placeholder="you@example.com"
-			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
-		/>
-	</div>
-
-	<div>
-		<div class="flex items-center justify-between mb-1">
-			<label for="password" class="block text-xs font-bold text-[#1a1a1a]">Password</label>
-			<a href="/auth/reset-password" class="text-xs text-[#004aff] hover:underline">Forgot password?</a>
+<div class="auth-card">
+	<div class="auth-logo">
+		<div class="auth-logo-mark">
+			<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+				<rect x="2" y="2" width="5" height="5" rx="1" fill="white"/>
+				<rect x="9" y="2" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+				<rect x="2" y="9" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+				<rect x="9" y="9" width="5" height="5" rx="1" fill="white"/>
+			</svg>
 		</div>
-		<input
-			id="password"
-			name="password"
-			type="password"
-			required
-			autocomplete="current-password"
-			placeholder="••••••••"
-			class="w-full px-3 py-2 text-sm border border-[#c7d2e1] rounded-lg bg-white text-[#1a1a1a] placeholder-[#9aa5b4] focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent transition-all"
-		/>
+		<span style="font-size:14px;font-weight:700;color:var(--text-primary);">Atomic DSB</span>
 	</div>
 
-	<button
-		type="submit"
-		disabled={loading}
-		class="w-full py-2.5 px-4 bg-[#004aff] hover:bg-[#0040dd] disabled:bg-[#9ab3ff] text-white text-sm font-bold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:ring-offset-2"
-	>
-		{loading ? 'Signing in...' : 'Sign in'}
-	</button>
-</form>
+	<h1 class="auth-title">Sign in</h1>
+	<p class="auth-subtitle">Sign in to your design system workspace</p>
 
-<p class="mt-6 text-center text-xs text-[#4a5568]">
-	Don't have an account?
-	<a href="/auth/sign-up" class="text-[#004aff] font-bold hover:underline">Sign up</a>
-</p>
+	{#if form?.error}
+		<div class="alert alert-error" style="margin-bottom:16px;">
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="flex-shrink:0;margin-top:1px;">
+				<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+			</svg>
+			{form.error}
+		</div>
+	{/if}
+
+	<form
+		method="POST"
+		action="?/signIn"
+		use:enhance={() => {
+			loading = true;
+			return async ({ update }) => { await update(); loading = false; };
+		}}
+		style="display:flex;flex-direction:column;gap:14px;"
+	>
+		<div class="form-group">
+			<label class="form-label" for="email">Email address</label>
+			<input
+				id="email" name="email" type="email" required
+				autocomplete="email" placeholder="you@company.com"
+				class="form-input"
+			/>
+		</div>
+
+		<div class="form-group">
+			<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+				<label class="form-label" for="password" style="margin-bottom:0;">Password</label>
+				<a href="/auth/reset-password" style="font-size:11px;color:var(--accent);text-decoration:none;">Forgot?</a>
+			</div>
+			<input
+				id="password" name="password" type="password" required
+				autocomplete="current-password" placeholder="••••••••"
+				class="form-input"
+			/>
+		</div>
+
+		<button type="submit" class="btn btn-primary btn-lg" disabled={loading} style="width:100%;margin-top:4px;">
+			{#if loading}
+				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="animation:spin 0.8s linear infinite;">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+				</svg>
+				Signing in…
+			{:else}
+				Sign in
+			{/if}
+		</button>
+	</form>
+
+	<p class="auth-footer-link">
+		Don't have an account? <a href="/auth/sign-up">Create one</a>
+	</p>
+</div>

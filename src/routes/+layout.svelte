@@ -5,7 +5,6 @@
 	import { createClient } from '$lib/supabase/client';
 
 	const { children, data } = $props();
-
 	const supabase = createClient();
 
 	onMount(() => {

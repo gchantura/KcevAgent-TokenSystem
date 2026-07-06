@@ -17,7 +17,7 @@
 	let searchQuery = $state('');
 	let selectedCategory = $state('all');
 	let selectedStatus = $state('all');
-	let selectedComponent = $state<Component | null>(null);
+	let selected = $state<Component | null>(null);
 
 	const categories = $derived(['all', ...new Set(components.map(c => c.category))]);
 	const statuses = ['all', 'draft', 'review', 'approved', 'deprecated', 'needs-update'];
@@ -30,117 +30,88 @@
 	}));
 
 	const grouped = $derived(() => {
-		const map = new Map<string, Component[]>();
+		const m = new Map<string, Component[]>();
 		for (const c of filtered) {
-			const list = map.get(c.category) ?? [];
+			const list = m.get(c.category) ?? [];
 			list.push(c);
-			map.set(c.category, list);
+			m.set(c.category, list);
 		}
-		return map;
+		return m;
 	});
 
-	const maturityIcon = {
-		draft: '○',
-		review: '◐',
-		approved: '●',
-		deprecated: '✕'
+	const maturitySymbol: Record<string,string> = {
+		draft: '○', review: '◑', approved: '●', deprecated: '×'
 	};
 </script>
 
-<div class="flex flex-col h-full lg:flex-row">
-	<!-- Left: component list -->
-	<div class="flex-1 flex flex-col overflow-hidden">
+<div style="display:flex;flex:1;overflow:hidden;">
+
+	<!-- Left: grid -->
+	<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;{selected ? 'border-right:1px solid var(--border);' : ''}">
+
 		<!-- Filters -->
-		<div class="bg-white border-b border-[#d9e4ff] px-4 py-3 flex flex-col gap-2">
-			<div class="flex gap-2">
-				<div class="relative flex-1">
-					<svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9aa5b4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-					</svg>
-					<input
-						bind:value={searchQuery}
-						type="search"
-						placeholder="Search components..."
-						class="w-full pl-8 pr-3 py-1.5 text-xs border border-[#d9e4ff] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004aff] focus:border-transparent bg-white"
-					/>
-				</div>
-				<a
-					href="/app/org/{orgSlug}/components/new?ds={dsId}"
-					class="px-3 py-1.5 text-xs font-bold bg-[#004aff] text-white rounded-lg hover:bg-[#0040dd] transition-colors whitespace-nowrap"
-				>
-					+ Component
-				</a>
+		<div class="filter-bar">
+			<div class="search-input-wrap">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+					<circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/>
+				</svg>
+				<input
+					bind:value={searchQuery}
+					type="search" placeholder="Search components…"
+					class="search-input"
+				/>
 			</div>
-			<div class="flex gap-2 flex-wrap">
-				<select
-					bind:value={selectedCategory}
-					class="text-xs border border-[#d9e4ff] rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-[#004aff]"
-				>
-					{#each categories as cat}
-						<option value={cat}>{cat === 'all' ? 'All categories' : cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-					{/each}
-				</select>
-				<select
-					bind:value={selectedStatus}
-					class="text-xs border border-[#d9e4ff] rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-[#004aff]"
-				>
-					{#each statuses as s}
-						<option value={s}>{s === 'all' ? 'All statuses' : s.charAt(0).toUpperCase() + s.slice(1)}</option>
-					{/each}
-				</select>
-			</div>
-			<p class="text-[10px] text-[#9aa5b4]">{filtered.length} component{filtered.length !== 1 ? 's' : ''} shown</p>
+			<select bind:value={selectedCategory} class="filter-select">
+				{#each categories as cat}
+					<option value={cat}>{cat === 'all' ? 'All categories' : cat[0].toUpperCase() + cat.slice(1)}</option>
+				{/each}
+			</select>
+			<select bind:value={selectedStatus} class="filter-select">
+				{#each statuses as s}
+					<option value={s}>{s === 'all' ? 'All statuses' : s[0].toUpperCase() + s.slice(1)}</option>
+				{/each}
+			</select>
+			<span class="filter-count">{filtered.length} component{filtered.length !== 1 ? 's' : ''}</span>
+			<a href="/app/org/{orgSlug}/components/new?ds={dsId}" class="btn btn-primary btn-sm" style="margin-left:auto;">
+				<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+				</svg>
+				Add
+			</a>
 		</div>
 
-		<!-- Component grid -->
-		<div class="flex-1 overflow-auto p-4">
+		<div style="flex:1;overflow-y:auto;padding:16px;">
 			{#if components.length === 0}
-				<div class="flex flex-col items-center justify-center h-full text-center py-16">
-					<div class="w-12 h-12 rounded-xl bg-[#f5f7fa] flex items-center justify-center mb-3">
-						<svg class="w-6 h-6 text-[#9aa5b4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<div class="empty-state">
+					<div class="empty-icon">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
 						</svg>
 					</div>
-					<p class="text-sm font-bold text-[#1a1a1a] mb-1">No components yet</p>
-					<p class="text-xs text-[#4a5568] mb-4">Add components to document your design system</p>
-					<a
-						href="/app/org/{orgSlug}/components/new?ds={dsId}"
-						class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#004aff] text-white text-xs font-bold rounded-lg hover:bg-[#0040dd] transition-colors"
-					>
-						Add component
-					</a>
+					<p class="empty-title">No components yet</p>
+					<p class="empty-desc">Document your design system's UI components here.</p>
+					<a href="/app/org/{orgSlug}/components/new?ds={dsId}" class="btn btn-primary btn-sm">Add component</a>
 				</div>
 			{:else if filtered.length === 0}
-				<div class="text-center py-12">
-					<p class="text-sm text-[#9aa5b4]">No components match your filters</p>
+				<div class="empty-state">
+					<p class="empty-title">No results</p>
+					<p class="empty-desc">Try adjusting your search or filters.</p>
 				</div>
 			{:else}
 				{#each grouped() as [category, comps]}
-					<div class="mb-6">
-						<h3 class="text-xs font-bold text-[#9aa5b4] uppercase tracking-wider mb-3 px-1">
-							{category}
-						</h3>
-						<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-							{#each comps as component}
+					<div style="margin-bottom:24px;">
+						<p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">{category}</p>
+						<div class="component-grid">
+							{#each comps as c}
 								<button
-									onclick={() => selectedComponent = selectedComponent?.id === component.id ? null : component}
-									class="text-left p-3 bg-white rounded-xl border transition-all hover:shadow-sm
-										{selectedComponent?.id === component.id
-											? 'border-[#004aff] ring-2 ring-[#004aff26]'
-											: 'border-[#d9e4ff] hover:border-[#004aff]'}"
+									class="component-card {selected?.id === c.id ? 'selected' : ''}"
+									onclick={() => selected = selected?.id === c.id ? null : c}
 								>
-									<!-- Component preview area -->
-									<div class="h-16 rounded-lg bg-[#f8fafd] border border-[#d9e4ff] flex items-center justify-center mb-3">
-										<span class="text-2xl text-[#9aa5b4]" aria-hidden="true">
-											{maturityIcon[component.maturity as keyof typeof maturityIcon] ?? '○'}
-										</span>
+									<div class="component-preview">
+										<span style="font-size:24px;color:var(--text-muted);">{maturitySymbol[c.maturity] ?? '○'}</span>
 									</div>
-									<div>
-										<p class="text-xs font-bold text-[#1a1a1a] truncate">{component.name}</p>
-										<div class="flex items-center gap-1 mt-1">
-											<StatusBadge status={component.status} size="xs" />
-										</div>
-									</div>
+									<p class="component-name">{c.name}</p>
+									<StatusBadge status={c.status} size="xs" />
 								</button>
 							{/each}
 						</div>
@@ -150,76 +121,66 @@
 		</div>
 	</div>
 
-	<!-- Right: Component detail -->
-	{#if selectedComponent}
-		<div class="w-full lg:w-80 bg-white border-t lg:border-t-0 lg:border-l border-[#d9e4ff] flex flex-col overflow-hidden">
-			<div class="flex items-center justify-between px-4 py-3 border-b border-[#d9e4ff]">
-				<h3 class="text-sm font-bold text-[#1a1a1a]">Component detail</h3>
+	<!-- Right: detail -->
+	{#if selected}
+		<div style="width:300px;flex-shrink:0;background:var(--bg-surface);display:flex;flex-direction:column;overflow:hidden;">
+			<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+				<span style="font-size:12px;font-weight:600;color:var(--text-primary);">Component detail</span>
 				<button
-					onclick={() => selectedComponent = null}
-					class="text-[#9aa5b4] hover:text-[#1a1a1a]"
+					class="btn btn-ghost btn-sm"
+					onclick={() => selected = null}
 					aria-label="Close"
+					style="padding:2px 4px;"
 				>
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
 					</svg>
 				</button>
 			</div>
 
-			<div class="flex-1 overflow-auto p-4 space-y-4">
+			<div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;">
 				<div>
-					<p class="text-base font-bold text-[#1a1a1a]">{selectedComponent.name}</p>
-					<p class="text-xs text-[#9aa5b4] font-mono mt-0.5">{selectedComponent.slug}</p>
+					<p style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:2px;">{selected.name}</p>
+					<p class="mono" style="font-size:11px;color:var(--text-muted);">{selected.slug}</p>
 				</div>
 
-				<div class="flex gap-2 flex-wrap">
-					<StatusBadge status={selectedComponent.status} size="sm" />
-					<StatusBadge status={selectedComponent.maturity} size="sm" />
-					<span class="text-xs px-2 py-0.5 rounded-full bg-[#f5f7fa] text-[#4a5568] font-bold">{selectedComponent.category}</span>
+				<div style="display:flex;gap:4px;flex-wrap:wrap;">
+					<StatusBadge status={selected.status} size="xs" />
+					<StatusBadge status={selected.maturity} size="xs" />
+					<span class="badge badge-draft" style="font-size:10px;">{selected.category}</span>
 				</div>
 
-				{#if selectedComponent.description}
+				{#if selected.description}
 					<div>
-						<p class="text-[10px] font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Description</p>
-						<p class="text-xs text-[#4a5568]">{selectedComponent.description}</p>
+						<p style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Description</p>
+						<p style="font-size:12px;color:var(--text-secondary);">{selected.description}</p>
 					</div>
 				{/if}
 
-				{#if selectedComponent.usage_guidance}
+				{#if selected.usage_guidance}
 					<div>
-						<p class="text-[10px] font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Usage</p>
-						<div class="p-2 rounded-lg bg-[#d3eedf] border border-[#86efac]">
-							<p class="text-xs text-[#0e6b2c]">{selectedComponent.usage_guidance}</p>
-						</div>
+						<p style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Usage</p>
+						<div class="alert alert-info" style="font-size:11px;">{selected.usage_guidance}</div>
 					</div>
 				{/if}
 
-				{#if selectedComponent.accessibility_guidance}
+				{#if selected.accessibility_guidance}
 					<div>
-						<p class="text-[10px] font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Accessibility</p>
-						<p class="text-xs text-[#4a5568]">{selectedComponent.accessibility_guidance}</p>
+						<p style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Accessibility</p>
+						<p style="font-size:12px;color:var(--text-secondary);">{selected.accessibility_guidance}</p>
 					</div>
 				{/if}
 
-				{#if selectedComponent.code_reference}
+				{#if selected.code_reference}
 					<div>
-						<p class="text-[10px] font-bold text-[#9aa5b4] uppercase tracking-wider mb-1">Code reference</p>
-						<code class="text-xs font-mono bg-[#f5f7fa] px-2 py-1 rounded">{selectedComponent.code_reference}</code>
+						<p style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Code</p>
+						<code style="font-size:11px;font-family:monospace;background:var(--bg-subtle);padding:4px 8px;border-radius:var(--radius-sm);display:block;">{selected.code_reference}</code>
 					</div>
 				{/if}
 
-				<div class="border-t border-[#d9e4ff] pt-3">
-					<p class="text-[10px] text-[#9aa5b4]">
-						Updated {new Date(selectedComponent.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-					</p>
+				<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;">
+					<p style="font-size:11px;color:var(--text-muted);">Updated {new Date(selected.updated_at).toLocaleDateString()}</p>
 				</div>
-
-				<a
-					href="/app/org/{orgSlug}/components/{selectedComponent.id}/edit"
-					class="block w-full text-center py-2 px-4 border border-[#d9e4ff] rounded-lg text-xs font-bold text-[#004aff] hover:bg-[#eef2ff] transition-colors"
-				>
-					Edit component
-				</a>
 			</div>
 		</div>
 	{/if}

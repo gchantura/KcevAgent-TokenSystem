@@ -60,7 +60,7 @@
       "zod": "^4.4.3"
     }
   },
-  "source_digest": "356be84603fc792e",
+  "source_digest": "c11a3a5018acb221",
   "files": [
     {
       "path": "src/app.d.ts",
@@ -80,8 +80,8 @@
     },
     {
       "path": "src/app.html",
-      "bytes": 728,
-      "digest": "ce1ddbb372d5f192",
+      "bytes": 423,
+      "digest": "fad958e9751143a2",
       "extension": ".html",
       "imports": [],
       "exports": [],
@@ -110,8 +110,8 @@
     },
     {
       "path": "src/lib/components/AppSidebar.svelte",
-      "bytes": 9622,
-      "digest": "950c9e37d36172f1",
+      "bytes": 8028,
+      "digest": "a12d99dbf03ee970",
       "extension": ".svelte",
       "imports": [
         "$lib/supabase/types"
@@ -123,8 +123,8 @@
     },
     {
       "path": "src/lib/components/ComponentLibrary.svelte",
-      "bytes": 8692,
-      "digest": "14fa3d90f2af4e6a",
+      "bytes": 7403,
+      "digest": "d9944f415bec3bad",
       "extension": ".svelte",
       "imports": [
         "$lib/supabase/types",
@@ -137,8 +137,8 @@
     },
     {
       "path": "src/lib/components/StatusBadge.svelte",
-      "bytes": 1308,
-      "digest": "110805b3654103c0",
+      "bytes": 1216,
+      "digest": "8015cd9e5bc6c620",
       "extension": ".svelte",
       "imports": [],
       "exports": [],
@@ -148,8 +148,8 @@
     },
     {
       "path": "src/lib/components/TokenExplorer.svelte",
-      "bytes": 13042,
-      "digest": "16c4e5738b5ea371",
+      "bytes": 10849,
+      "digest": "3ac1ec2b61049a9b",
       "extension": ".svelte",
       "imports": [
         "$lib/supabase/types",
@@ -235,8 +235,8 @@
     },
     {
       "path": "src/routes/+layout.svelte",
-      "bytes": 612,
-      "digest": "5ef3166992df178b",
+      "bytes": 611,
+      "digest": "498cd11d54f98f9c",
       "extension": ".svelte",
       "imports": [
         "$app/navigation",
@@ -294,8 +294,8 @@
     },
     {
       "path": "src/routes/app/+layout.svelte",
-      "bytes": 744,
-      "digest": "8a64855c15184f59",
+      "bytes": 701,
+      "digest": "a6af881e8a120a78",
       "extension": ".svelte",
       "imports": [
         "$app/navigation",
@@ -355,11 +355,10 @@
     },
     {
       "path": "src/routes/app/admin/+page.svelte",
-      "bytes": 8650,
-      "digest": "2e9237703e089fc8",
+      "bytes": 6415,
+      "digest": "6e258498be21f5f7",
       "extension": ".svelte",
       "imports": [
-        "$app/forms",
         "$lib/components/StatusBadge.svelte",
         "./$types"
       ],
@@ -441,8 +440,8 @@
     },
     {
       "path": "src/routes/app/onboarding/+page.svelte",
-      "bytes": 2781,
-      "digest": "bc5d8f74d698d950",
+      "bytes": 2477,
+      "digest": "92bdaf557795eefe",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
@@ -471,8 +470,8 @@
     },
     {
       "path": "src/routes/app/org/[slug]/+page.svelte",
-      "bytes": 8289,
-      "digest": "ae50d774566c8e41",
+      "bytes": 7409,
+      "digest": "2fd376421b186ab3",
       "extension": ".svelte",
       "imports": [
         "$lib/components/StatusBadge.svelte",
@@ -502,8 +501,8 @@
     },
     {
       "path": "src/routes/app/org/[slug]/projects/[projectSlug]/+page.svelte",
-      "bytes": 6383,
-      "digest": "5d9c7774dcc3b19f",
+      "bytes": 5020,
+      "digest": "fdae77f1f77bc749",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
@@ -533,8 +532,8 @@
     },
     {
       "path": "src/routes/app/org/[slug]/projects/[projectSlug]/ds/[dsId]/+page.svelte",
-      "bytes": 4823,
-      "digest": "70f3c4d445706215",
+      "bytes": 5052,
+      "digest": "bbee544de96ed576",
       "extension": ".svelte",
       "imports": [
         "$lib/components/ComponentLibrary.svelte",
@@ -566,8 +565,8 @@
     },
     {
       "path": "src/routes/app/org/[slug]/projects/new/+page.svelte",
-      "bytes": 2513,
-      "digest": "895100f976c4dd2c",
+      "bytes": 1937,
+      "digest": "9a073b36a74ed463",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
@@ -623,12 +622,11 @@
     },
     {
       "path": "src/routes/app/settings/+page.svelte",
-      "bytes": 3595,
-      "digest": "23360983c1ed91d3",
+      "bytes": 3637,
+      "digest": "9f6fbd926b197489",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
-        "$lib/components/StatusBadge.svelte",
         "./$types"
       ],
       "exports": [],
@@ -665,8 +663,8 @@
     },
     {
       "path": "src/routes/auth/+layout.svelte",
-      "bytes": 1170,
-      "digest": "e23961f4c0894138",
+      "bytes": 115,
+      "digest": "db6205336a6b118c",
       "extension": ".svelte",
       "imports": [],
       "exports": [],
@@ -692,8 +690,8 @@
     },
     {
       "path": "src/routes/auth/reset-password/+page.svelte",
-      "bytes": 1779,
-      "digest": "d4aa2feaa4cd8772",
+      "bytes": 1852,
+      "digest": "41886054a230961e",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
@@ -722,8 +720,8 @@
     },
     {
       "path": "src/routes/auth/sign-in/+page.svelte",
-      "bytes": 2244,
-      "digest": "5bae5a81cf5bc77b",
+      "bytes": 2844,
+      "digest": "3f6750fbaa476aa9",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
@@ -752,8 +750,8 @@
     },
     {
       "path": "src/routes/auth/sign-up/+page.svelte",
-      "bytes": 2739,
-      "digest": "c2e92c55f06732d6",
+      "bytes": 2428,
+      "digest": "9a7648d890f0c4e4",
       "extension": ".svelte",
       "imports": [
         "$app/forms",
@@ -766,8 +764,8 @@
     },
     {
       "path": "src/routes/layout.css",
-      "bytes": 320,
-      "digest": "ecbe29810ef2bbf9",
+      "bytes": 25283,
+      "digest": "ef5fc41b57115310",
       "extension": ".css",
       "imports": [],
       "exports": [],
